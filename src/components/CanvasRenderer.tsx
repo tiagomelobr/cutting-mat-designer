@@ -443,7 +443,7 @@ export const CanvasRenderer = ({ config, onSVGGenerated }: CanvasRendererProps) 
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-full overflow-auto bg-base-200"
+      className="relative w-full h-full overflow-hidden bg-base-200"
       onWheel={handleWheel}
       style={{
         backgroundImage: `repeating-linear-gradient(
@@ -484,7 +484,7 @@ export const CanvasRenderer = ({ config, onSVGGenerated }: CanvasRendererProps) 
         </button>
       </div>
       
-      <div className="flex items-center justify-center min-h-full p-4">
+      <div className="flex items-center justify-center w-full h-full overflow-hidden">
         <svg
           viewBox={`0 0 ${pixelWidth} ${pixelHeight}`}
           className="shadow-lg"

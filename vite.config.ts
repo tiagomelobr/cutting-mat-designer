@@ -21,7 +21,7 @@ export default defineConfig({
       },
     })
   ],
-  base: '/Cutting-Mat-Designer/', // Replace with your GitHub repo name
+  base: '/cutting-mat-designer/', // Replace with your GitHub repo name
   define: {
     // Define Node.js globals for browser compatibility
     '__dirname': '""',
