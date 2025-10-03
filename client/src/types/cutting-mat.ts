@@ -37,11 +37,13 @@ export interface CuttingMatConfig {
   width: number;
   height: number;
   unit: MeasurementUnit;
+  margin: number;
   gridConfig: GridConfig;
   backgroundColor: string;
   paperSizeColor: string;
   measurementColor: string;
   enabledPaperSizes: string[];
+  rotatedPaperSizes: string[];
   features: {
     primaryGrid: boolean;
     secondaryGrid: boolean;

@@ -6,6 +6,7 @@ export default function CuttingMatCanvasExample() {
     width: 12,
     height: 12,
     unit: 'inches',
+    margin: 0.5,
     gridConfig: {
       primaryInterval: 1,
       secondaryInterval: 0.5,
@@ -24,6 +25,7 @@ export default function CuttingMatCanvasExample() {
     paperSizeColor: '#f59e0b',
     measurementColor: '#3b82f6',
     enabledPaperSizes: ['A4', 'Letter'],
+    rotatedPaperSizes: [],
     features: {
       primaryGrid: true,
       secondaryGrid: true,

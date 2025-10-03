@@ -7,6 +7,8 @@ import PaperSizeControls from './PaperSizeControls';
 import FeatureToggles from './FeatureToggles';
 import ColorPicker from './ColorPicker';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Download } from 'lucide-react';
 
 interface ControlsPanelProps {
@@ -18,6 +20,14 @@ interface ControlsPanelProps {
 export default function ControlsPanel({ config, onConfigChange, onExport }: ControlsPanelProps) {
   const updateConfig = (updates: Partial<CuttingMatConfig>) => {
     onConfigChange({ ...config, ...updates });
+  };
+
+  const getUnitLabel = () => {
+    switch (config.unit) {
+      case 'inches': return 'in';
+      case 'cm': return 'cm';
+      case 'mm': return 'mm';
+    }
   };
 
   return (
@@ -34,14 +44,29 @@ export default function ControlsPanel({ config, onConfigChange, onExport }: Cont
                 Canvas Dimensions
               </AccordionTrigger>
               <AccordionContent className="pt-4">
-                <CanvasDimensionControls
-                  width={config.width}
-                  height={config.height}
-                  unit={config.unit}
-                  onWidthChange={(width) => updateConfig({ width })}
-                  onHeightChange={(height) => updateConfig({ height })}
-                  onUnitChange={(unit) => updateConfig({ unit })}
-                />
+                <div className="space-y-4">
+                  <CanvasDimensionControls
+                    width={config.width}
+                    height={config.height}
+                    unit={config.unit}
+                    onWidthChange={(width) => updateConfig({ width })}
+                    onHeightChange={(height) => updateConfig({ height })}
+                    onUnitChange={(unit) => updateConfig({ unit })}
+                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="margin" className="text-sm font-medium">Margin ({getUnitLabel()})</Label>
+                    <Input
+                      id="margin"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={config.margin}
+                      onChange={(e) => updateConfig({ margin: parseFloat(e.target.value) || 0 })}
+                      className="font-mono"
+                      data-testid="input-margin"
+                    />
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -65,6 +90,7 @@ export default function ControlsPanel({ config, onConfigChange, onExport }: Cont
                 <GridConfigControls
                   gridConfig={config.gridConfig}
                   onGridConfigChange={(gridConfig) => updateConfig({ gridConfig })}
+                  unit={config.unit}
                 />
               </AccordionContent>
             </AccordionItem>
@@ -76,7 +102,9 @@ export default function ControlsPanel({ config, onConfigChange, onExport }: Cont
               <AccordionContent className="pt-4">
                 <PaperSizeControls
                   enabledPaperSizes={config.enabledPaperSizes}
+                  rotatedPaperSizes={config.rotatedPaperSizes}
                   onEnabledPaperSizesChange={(sizes) => updateConfig({ enabledPaperSizes: sizes })}
+                  onRotatedPaperSizesChange={(sizes) => updateConfig({ rotatedPaperSizes: sizes })}
                 />
               </AccordionContent>
             </AccordionItem>

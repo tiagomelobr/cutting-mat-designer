@@ -39,25 +39,29 @@ function getStrokeDashArray(style: LineStyle, weight: number): string {
 export function generateCuttingMatSVG(config: CuttingMatConfig): string {
   const widthMM = convertToMM(config.width, config.unit);
   const heightMM = convertToMM(config.height, config.unit);
+  const marginMM = convertToMM(config.margin, config.unit);
   
   const primaryIntervalMM = convertToMM(config.gridConfig.primaryInterval, config.unit);
   const secondaryIntervalMM = convertToMM(config.gridConfig.secondaryInterval, config.unit);
   const tertiaryIntervalMM = convertToMM(config.gridConfig.tertiaryInterval, config.unit);
 
-  let svgContent = `<svg width="${widthMM}" height="${heightMM}" xmlns="http://www.w3.org/2000/svg">`;
+  const totalWidth = widthMM + (marginMM * 2);
+  const totalHeight = heightMM + (marginMM * 2);
+
+  let svgContent = `<svg width="${totalWidth}" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg">`;
   
   svgContent += `<rect width="100%" height="100%" fill="${config.backgroundColor}"/>`;
 
   // Tertiary grid
   if (config.features.tertiaryGrid && tertiaryIntervalMM > 0) {
     for (let x = tertiaryIntervalMM; x < widthMM; x += tertiaryIntervalMM) {
-      svgContent += `<line x1="${x}" y1="0" x2="${x}" y2="${heightMM}" 
+      svgContent += `<line x1="${x + marginMM}" y1="${marginMM}" x2="${x + marginMM}" y2="${heightMM + marginMM}" 
         stroke="${config.gridConfig.tertiaryColor}" 
         stroke-width="${config.gridConfig.tertiaryWeight}"
         stroke-dasharray="${getStrokeDashArray(config.gridConfig.tertiaryStyle, config.gridConfig.tertiaryWeight)}"/>`;
     }
     for (let y = tertiaryIntervalMM; y < heightMM; y += tertiaryIntervalMM) {
-      svgContent += `<line x1="0" y1="${y}" x2="${widthMM}" y2="${y}" 
+      svgContent += `<line x1="${marginMM}" y1="${y + marginMM}" x2="${widthMM + marginMM}" y2="${y + marginMM}" 
         stroke="${config.gridConfig.tertiaryColor}" 
         stroke-width="${config.gridConfig.tertiaryWeight}"
         stroke-dasharray="${getStrokeDashArray(config.gridConfig.tertiaryStyle, config.gridConfig.tertiaryWeight)}"/>`;
@@ -67,13 +71,13 @@ export function generateCuttingMatSVG(config: CuttingMatConfig): string {
   // Secondary grid
   if (config.features.secondaryGrid && secondaryIntervalMM > 0) {
     for (let x = secondaryIntervalMM; x < widthMM; x += secondaryIntervalMM) {
-      svgContent += `<line x1="${x}" y1="0" x2="${x}" y2="${heightMM}" 
+      svgContent += `<line x1="${x + marginMM}" y1="${marginMM}" x2="${x + marginMM}" y2="${heightMM + marginMM}" 
         stroke="${config.gridConfig.secondaryColor}" 
         stroke-width="${config.gridConfig.secondaryWeight}"
         stroke-dasharray="${getStrokeDashArray(config.gridConfig.secondaryStyle, config.gridConfig.secondaryWeight)}"/>`;
     }
     for (let y = secondaryIntervalMM; y < heightMM; y += secondaryIntervalMM) {
-      svgContent += `<line x1="0" y1="${y}" x2="${widthMM}" y2="${y}" 
+      svgContent += `<line x1="${marginMM}" y1="${y + marginMM}" x2="${widthMM + marginMM}" y2="${y + marginMM}" 
         stroke="${config.gridConfig.secondaryColor}" 
         stroke-width="${config.gridConfig.secondaryWeight}"
         stroke-dasharray="${getStrokeDashArray(config.gridConfig.secondaryStyle, config.gridConfig.secondaryWeight)}"/>`;
@@ -83,13 +87,13 @@ export function generateCuttingMatSVG(config: CuttingMatConfig): string {
   // Primary grid
   if (config.features.primaryGrid && primaryIntervalMM > 0) {
     for (let x = primaryIntervalMM; x < widthMM; x += primaryIntervalMM) {
-      svgContent += `<line x1="${x}" y1="0" x2="${x}" y2="${heightMM}" 
+      svgContent += `<line x1="${x + marginMM}" y1="${marginMM}" x2="${x + marginMM}" y2="${heightMM + marginMM}" 
         stroke="${config.gridConfig.primaryColor}" 
         stroke-width="${config.gridConfig.primaryWeight}"
         stroke-dasharray="${getStrokeDashArray(config.gridConfig.primaryStyle, config.gridConfig.primaryWeight)}"/>`;
     }
     for (let y = primaryIntervalMM; y < heightMM; y += primaryIntervalMM) {
-      svgContent += `<line x1="0" y1="${y}" x2="${widthMM}" y2="${y}" 
+      svgContent += `<line x1="${marginMM}" y1="${y + marginMM}" x2="${widthMM + marginMM}" y2="${y + marginMM}" 
         stroke="${config.gridConfig.primaryColor}" 
         stroke-width="${config.gridConfig.primaryWeight}"
         stroke-dasharray="${getStrokeDashArray(config.gridConfig.primaryStyle, config.gridConfig.primaryWeight)}"/>`;
@@ -100,12 +104,25 @@ export function generateCuttingMatSVG(config: CuttingMatConfig): string {
   if (config.features.paperSizeIndicators) {
     config.enabledPaperSizes.forEach(sizeName => {
       const paperSize = PAPER_SIZES.find(p => p.name === sizeName);
-      if (paperSize && paperSize.width <= widthMM && paperSize.height <= heightMM) {
-        svgContent += `<rect x="0" y="0" width="${paperSize.width}" height="${paperSize.height}" 
+      if (!paperSize) return;
+      
+      const isRotated = config.rotatedPaperSizes.includes(sizeName);
+      const paperWidth = isRotated ? paperSize.height : paperSize.width;
+      const paperHeight = isRotated ? paperSize.width : paperSize.height;
+      
+      if (paperWidth <= widthMM && paperHeight <= heightMM) {
+        svgContent += `<rect x="${marginMM}" y="${marginMM}" width="${paperWidth}" height="${paperHeight}" 
           fill="none" stroke="${config.paperSizeColor}" stroke-width="2" 
           stroke-dasharray="8 4"/>`;
-        svgContent += `<text x="6" y="16" font-family="Inter, sans-serif" font-size="11" 
-          fill="${config.paperSizeColor}" font-weight="500">${paperSize.name}</text>`;
+        
+        const textX = marginMM + 6;
+        const textY = marginMM + 16;
+        const textContent = isRotated ? `${paperSize.name} ↻` : paperSize.name;
+        
+        svgContent += `<rect x="${textX - 2}" y="${textY - 11}" width="${textContent.length * 6.5 + 4}" height="14" 
+          fill="${config.backgroundColor}" opacity="0.9"/>`;
+        svgContent += `<text x="${textX}" y="${textY}" font-family="Inter, sans-serif" font-size="11" 
+          fill="${config.paperSizeColor}" font-weight="500">${textContent}</text>`;
       }
     });
   }
@@ -115,9 +132,9 @@ export function generateCuttingMatSVG(config: CuttingMatConfig): string {
     let position = 0;
     for (let x = 0; x <= widthMM; x += primaryIntervalMM) {
       const label = convertFromMM(x, config.unit).toFixed(config.unit === 'mm' ? 0 : 1);
-      svgContent += `<line x1="${x}" y1="0" x2="${x}" y2="4" 
+      svgContent += `<line x1="${x + marginMM}" y1="${marginMM}" x2="${x + marginMM}" y2="${marginMM - 4}" 
         stroke="${config.measurementColor}" stroke-width="1"/>`;
-      svgContent += `<text x="${x}" y="-2" font-family="JetBrains Mono, monospace" font-size="10" 
+      svgContent += `<text x="${x + marginMM}" y="${marginMM - 6}" font-family="JetBrains Mono, monospace" font-size="10" 
         fill="${config.measurementColor}" text-anchor="middle">${label}</text>`;
       position++;
     }
@@ -125,9 +142,9 @@ export function generateCuttingMatSVG(config: CuttingMatConfig): string {
     position = 0;
     for (let y = 0; y <= heightMM; y += primaryIntervalMM) {
       const label = convertFromMM(y, config.unit).toFixed(config.unit === 'mm' ? 0 : 1);
-      svgContent += `<line x1="0" y1="${y}" x2="4" y2="${y}" 
+      svgContent += `<line x1="${marginMM}" y1="${y + marginMM}" x2="${marginMM - 4}" y2="${y + marginMM}" 
         stroke="${config.measurementColor}" stroke-width="1"/>`;
-      svgContent += `<text x="-6" y="${y + 3}" font-family="JetBrains Mono, monospace" font-size="10" 
+      svgContent += `<text x="${marginMM - 6}" y="${y + marginMM + 3}" font-family="JetBrains Mono, monospace" font-size="10" 
         fill="${config.measurementColor}" text-anchor="end">${label}</text>`;
       position++;
     }

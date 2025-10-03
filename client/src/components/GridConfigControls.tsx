@@ -1,17 +1,26 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import { GridConfig, LineStyle } from '@/types/cutting-mat';
+import { GridConfig, LineStyle, MeasurementUnit } from '@/types/cutting-mat';
 import ColorPicker from './ColorPicker';
 
 interface GridConfigControlsProps {
   gridConfig: GridConfig;
   onGridConfigChange: (config: GridConfig) => void;
+  unit: MeasurementUnit;
 }
 
-export default function GridConfigControls({ gridConfig, onGridConfigChange }: GridConfigControlsProps) {
+export default function GridConfigControls({ gridConfig, onGridConfigChange, unit }: GridConfigControlsProps) {
   const updateConfig = (updates: Partial<GridConfig>) => {
     onGridConfigChange({ ...gridConfig, ...updates });
+  };
+
+  const getUnitLabel = () => {
+    switch (unit) {
+      case 'inches': return 'in';
+      case 'cm': return 'cm';
+      case 'mm': return 'mm';
+    }
   };
 
   const renderGridSection = (
@@ -28,7 +37,7 @@ export default function GridConfigControls({ gridConfig, onGridConfigChange }: G
         <h4 className="font-medium text-sm">{label} Grid</h4>
         
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Interval</Label>
+          <Label className="text-xs text-muted-foreground">Interval ({getUnitLabel()})</Label>
           <Input
             type="number"
             min="0.1"

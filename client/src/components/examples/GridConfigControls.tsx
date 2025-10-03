@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import GridConfigControls from '../GridConfigControls';
-import { GridConfig } from '@/types/cutting-mat';
+import { GridConfig, MeasurementUnit } from '@/types/cutting-mat';
 
 export default function GridConfigControlsExample() {
   const [gridConfig, setGridConfig] = useState<GridConfig>({
@@ -17,12 +17,14 @@ export default function GridConfigControlsExample() {
     secondaryColor: '#a0aec0',
     tertiaryColor: '#cbd5e0',
   });
+  const [unit] = useState<MeasurementUnit>('inches');
   
   return (
     <div className="p-4 bg-sidebar max-w-md">
       <GridConfigControls
         gridConfig={gridConfig}
         onGridConfigChange={setGridConfig}
+        unit={unit}
       />
     </div>
   );
