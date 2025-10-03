@@ -25,6 +25,11 @@ export function convertFromMM(value: number, unit: string): number {
   }
 }
 
+function formatNumber(value: number, decimals: number): string {
+  const rounded = parseFloat(value.toFixed(decimals));
+  return rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(decimals);
+}
+
 function getStrokeDashArray(style: LineStyle, weight: number): string {
   switch (style) {
     case 'dashed':
@@ -106,7 +111,7 @@ export function generateCuttingMatSVG(config: CuttingMatConfig): string {
       const paperSize = PAPER_SIZES.find(p => p.name === sizeName);
       if (!paperSize) return;
       
-      const isRotated = config.rotatedPaperSizes.includes(sizeName);
+      const isRotated = config.rotatedPaperSizes?.includes(sizeName) || false;
       const paperWidth = isRotated ? paperSize.height : paperSize.width;
       const paperHeight = isRotated ? paperSize.width : paperSize.height;
       
@@ -117,36 +122,37 @@ export function generateCuttingMatSVG(config: CuttingMatConfig): string {
         
         const textX = marginMM + 6;
         const textY = marginMM + 16;
-        const textContent = isRotated ? `${paperSize.name} ↻` : paperSize.name;
+        const textContent = paperSize.name;
         
         svgContent += `<rect x="${textX - 2}" y="${textY - 11}" width="${textContent.length * 6.5 + 4}" height="14" 
           fill="${config.backgroundColor}" opacity="0.9"/>`;
-        svgContent += `<text x="${textX}" y="${textY}" font-family="Inter, sans-serif" font-size="11" 
-          fill="${config.paperSizeColor}" font-weight="500">${textContent}</text>`;
+        svgContent += `<text x="${textX}" y="${textY}" font-family="sans-serif" font-size="11" 
+          fill="none" stroke="${config.paperSizeColor}" stroke-width="0.3">${textContent}</text>`;
       }
     });
   }
 
   // Measurement labels
   if (config.features.measurements && config.features.axisLabels && primaryIntervalMM > 0) {
-    let position = 0;
+    const decimals = config.unit === 'mm' ? 0 : 1;
+    
     for (let x = 0; x <= widthMM; x += primaryIntervalMM) {
-      const label = convertFromMM(x, config.unit).toFixed(config.unit === 'mm' ? 0 : 1);
+      const value = convertFromMM(x, config.unit);
+      const label = formatNumber(value, decimals);
       svgContent += `<line x1="${x + marginMM}" y1="${marginMM}" x2="${x + marginMM}" y2="${marginMM - 4}" 
         stroke="${config.measurementColor}" stroke-width="1"/>`;
-      svgContent += `<text x="${x + marginMM}" y="${marginMM - 6}" font-family="JetBrains Mono, monospace" font-size="10" 
-        fill="${config.measurementColor}" text-anchor="middle">${label}</text>`;
-      position++;
+      svgContent += `<text x="${x + marginMM}" y="${marginMM - 6}" font-family="sans-serif" font-size="10" 
+        fill="none" stroke="${config.measurementColor}" stroke-width="0.25" text-anchor="middle">${label}</text>`;
     }
     
-    position = 0;
     for (let y = 0; y <= heightMM; y += primaryIntervalMM) {
-      const label = convertFromMM(y, config.unit).toFixed(config.unit === 'mm' ? 0 : 1);
+      const value = convertFromMM(y, config.unit);
+      const label = formatNumber(value, decimals);
       svgContent += `<line x1="${marginMM}" y1="${y + marginMM}" x2="${marginMM - 4}" y2="${y + marginMM}" 
         stroke="${config.measurementColor}" stroke-width="1"/>`;
-      svgContent += `<text x="${marginMM - 6}" y="${y + marginMM + 3}" font-family="JetBrains Mono, monospace" font-size="10" 
-        fill="${config.measurementColor}" text-anchor="end">${label}</text>`;
-      position++;
+      svgContent += `<text x="${marginMM - 6}" y="${y + marginMM}" font-family="sans-serif" font-size="10" 
+        fill="none" stroke="${config.measurementColor}" stroke-width="0.25" text-anchor="middle" 
+        transform="rotate(-90 ${marginMM - 6} ${y + marginMM})">${label}</text>`;
     }
   }
 
